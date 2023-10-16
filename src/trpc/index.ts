@@ -1,16 +1,41 @@
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { publicProcedure, router } from "./trpc";
+import { privateProcedure, publicProcedure, router } from "./trpc";
 import { TRPCError } from "@trpc/server";
+import { db } from "@/db";
 
 export const appRouter = router({
-  test: publicProcedure.query(() => {
-    authCallback: publicProcedure.query(() => {
-      const { getUser } = getKindeServerSession();
-      const user = getUser();
-      if (!user.id || !user.email) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Unauthorized" });
-      }
-      return { suceess: true };
+  authCallback: publicProcedure.query(async () => {
+    const { getUser } = getKindeServerSession();
+    const user = getUser();
+    if (!user.id || !user.email) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    // Check if the user is in the database
+    const dbUser = await db.user.findFirst({
+      where: {
+        id: user.id,
+      },
+    });
+
+    if (!dbUser) {
+      // Create user in the database
+      await db.user.create({
+        data: {
+          id: user.id,
+          email: user.email,
+        },
+      });
+    }
+
+    return { success: true };
+  }),
+  getUserFiles: privateProcedure.query(async ({ ctx }) => {
+    const { userId } = ctx;
+    return await db.file.findMany({
+      where: {
+        userId,
+      },
     });
   }),
 });
