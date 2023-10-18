@@ -16,7 +16,7 @@ import { start } from "repl";
 
 const UploadDropzone = () => {
   const router = useRouter();
-  const [isUploading, setIsUploading] = useState<boolean>(true);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const { toast } = useToast();
 
@@ -39,7 +39,7 @@ const UploadDropzone = () => {
           clearInterval(interval);
           return prevProgress;
         }
-        return prevProgress + 5;
+        return prevProgress + 1;
       });
     }, 500);
 
@@ -113,9 +113,9 @@ const UploadDropzone = () => {
               {isUploading ? (
                 <div className="w-full mt-4 max-w-xs mx-auto">
                   <Progress
-                    // indicatorColor={
-                    //   uploadProgress === 100 ? "bg-green-500" : ""
-                    // }
+                    indicatorColor={
+                      uploadProgress === 100 ? "bg-green-500" : ""
+                    }
                     value={uploadProgress}
                     className="h-1 w-full bg-zinc-200"
                   />
