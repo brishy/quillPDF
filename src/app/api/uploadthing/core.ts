@@ -1,6 +1,7 @@
+import { pinecone } from "@/app/lib/pinecone";
 import { PLANS } from "@/config/stripe";
 import { db } from "@/db";
-import { pinecone } from "../../lib/pinecone";
+
 import { getUserSubscriptionPlan } from "@/lib/stripe";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
@@ -87,7 +88,9 @@ const onUploadComplete = async ({
       });
     }
 
-    const pineconeIndex = pinecone.Index("quill-pdf");
+    const pineconeIndex = await pinecone
+      .Index("quill-pdf")
+      .namespace(metadata.userId);
 
     const embeddings = new OpenAIEmbeddings({
       openAIApiKey: process.env.OPENAI_API_KEY,
@@ -95,7 +98,6 @@ const onUploadComplete = async ({
 
     await PineconeStore.fromDocuments(pageLevelDocs, embeddings, {
       pineconeIndex,
-      namespace: createdFile.id,
     });
 
     await db.file.update({
@@ -120,10 +122,10 @@ const onUploadComplete = async ({
 };
 
 export const ourFileRouter = {
-  freePlanUploader: f({ pdf: { maxFileSize: "4MB" } })
+  freePlanUploader: f({ pdf: { maxFileSize: "8MB" } })
     .middleware(middleware)
     .onUploadComplete(onUploadComplete),
-  proPlanUploader: f({ pdf: { maxFileSize: "16MB" } })
+  proPlanUploader: f({ pdf: { maxFileSize: "32MB" } })
     .middleware(middleware)
     .onUploadComplete(onUploadComplete),
 } satisfies FileRouter;

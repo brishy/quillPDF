@@ -2,7 +2,6 @@ import { ReactNode, createContext, useRef, useState } from "react";
 import { useToast } from "../ui/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { trpc } from "@/app/_trpc/client";
-import { send } from "process";
 import { INFINITE_QUERY_LIMIT } from "@/config/infinite-query";
 
 type StreamResponse = {
@@ -12,6 +11,7 @@ type StreamResponse = {
   isLoading: boolean;
 };
 
+// step 1
 export const ChatContext = createContext<StreamResponse>({
   addMessage: () => {},
   message: "",
@@ -23,7 +23,7 @@ interface Props {
   fileId: string;
   children: ReactNode;
 }
-
+// step 2
 export const ChatContextProvider = ({ fileId, children }: Props) => {
   const [message, setMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -34,6 +34,7 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
 
   const backupMessage = useRef("");
 
+  // route responsible to sending message
   const { mutate: sendMessage } = useMutation({
     mutationFn: async ({ message }: { message: string }) => {
       const response = await fetch("/api/message", {
@@ -54,13 +55,13 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
       backupMessage.current = message;
       setMessage("");
 
-      // step 1
+      // step 1 for optimistic update
       await utils.getFileMessages.cancel();
 
       // step 2
       const previousMessages = utils.getFileMessages.getInfiniteData();
 
-      //step 3
+      // step 3
       utils.getFileMessages.setInfiniteData(
         { fileId, limit: INFINITE_QUERY_LIMIT },
         (old) => {
@@ -184,19 +185,18 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
         { messages: context?.previousMessages ?? [] }
       );
     },
-    onSettled: async () => {
-      setIsLoading(false);
+    // onSettled: async () => {
+    //   setIsLoading(false)
 
-      await utils.getFileMessages.invalidate({ fileId });
-    },
+    //   await utils.getFileMessages.invalidate({ fileId })
+    // },
   });
-  const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(event.target.value);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
   };
 
-  const addMessage = () => {
-    sendMessage({ message });
-  };
+  const addMessage = () => sendMessage({ message });
 
   return (
     <ChatContext.Provider

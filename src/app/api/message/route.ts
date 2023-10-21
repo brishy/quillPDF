@@ -9,49 +9,52 @@ import { OpenAIStream, StreamingTextResponse } from "ai";
 import { openai } from "@/app/lib/openai";
 
 export const runtime = "edge";
+// endpoint for asking a question to a pdf file
 export const POST = async (req: NextRequest) => {
-  //endpoint for asking a question to a pdf file
-
   const body = await req.json();
+
   const { getUser } = getKindeServerSession();
   const user = getUser();
 
-  const { id: userID } = user;
-  if (!user || !user.id) return new Response("Unauthorized", { status: 401 });
+  const { id: userId } = user;
+  if (!userId) return new Response("Unauthorized", { status: 401 });
 
   const { fileId, message } = SendMessageValidator.parse(body);
 
   const file = await db.file.findFirst({
     where: {
       id: fileId,
-      userId: userID,
+      userId,
     },
   });
 
-  if (!file) return new Response("File not found", { status: 404 });
+  if (!file) return new Response("Not found", { status: 404 });
 
   await db.message.create({
     data: {
       text: message,
       isUserMessage: true,
+      userId,
       fileId,
-      userId: userID,
     },
   });
 
-  //1: vectorize message
+  // 1: vectorize message
   const embeddings = new OpenAIEmbeddings({
     openAIApiKey: process.env.OPENAI_API_KEY,
   });
 
-  const pineconeIndex = pinecone.Index("quill-pdf");
+  const pineconeIndex = pinecone.Index("quill-pdf").namespace(userId);
 
   const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
     pineconeIndex,
   });
+
+  // TODO: paid users could get higher top K
   const results = await vectorStore.similaritySearch(message, 4, {
     "file.id": fileId,
   });
+
   const prevMessages = await db.message.findMany({
     where: {
       fileId,
@@ -61,10 +64,12 @@ export const POST = async (req: NextRequest) => {
     },
     take: 6,
   });
+
   const formattedPrevMessages = prevMessages.map((msg) => ({
     role: msg.isUserMessage ? ("user" as const) : ("assistant" as const),
     content: msg.text,
   }));
+
   const response = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
     temperature: 0,
@@ -104,7 +109,7 @@ export const POST = async (req: NextRequest) => {
           text: completion,
           isUserMessage: false,
           fileId,
-          userId: userID,
+          userId,
         },
       });
     },
