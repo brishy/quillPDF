@@ -87,9 +87,7 @@ const onUploadComplete = async ({
       });
     }
 
-    const pineconeIndex = await pinecone
-      .Index("quill-pdf")
-      .namespace(metadata.userId);
+    const pineconeIndex = pinecone.Index("quill-pdf");
 
     const embeddings = new OpenAIEmbeddings({
       openAIApiKey: process.env.OPENAI_API_KEY,
@@ -97,6 +95,7 @@ const onUploadComplete = async ({
 
     await PineconeStore.fromDocuments(pageLevelDocs, embeddings, {
       pineconeIndex,
+      namespace: createdFile.id,
     });
 
     await db.file.update({
