@@ -8,6 +8,7 @@ import { NextRequest } from "next/server";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import { openai } from "@/app/lib/openai";
 
+export const runtime = "edge";
 export const POST = async (req: NextRequest) => {
   //endpoint for asking a question to a pdf file
 
@@ -64,8 +65,7 @@ export const POST = async (req: NextRequest) => {
     role: msg.isUserMessage ? ("user" as const) : ("assistant" as const),
     content: msg.text,
   }));
-
-  const response = await openai.chat.completions.create({
+  const response = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
     temperature: 0,
     stream: true,
