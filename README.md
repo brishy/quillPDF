@@ -49,3 +49,7 @@ quillPDF is a cutting-edge full-stack SaaS product, utilizing Next.js, Typescrip
     ```
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## License
+
+This project is open-source and available under the [MIT License](LICENSE).
