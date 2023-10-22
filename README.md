@@ -21,6 +21,7 @@ quillPDF is a cutting-edge full-stack SaaS product, utilizing Next.js, Typescrip
 - Clean, Modern UI Using 'shadcn-ui'
 
 ## Optimizations:
+- Fix Pro Plan to work for users
 - Pro plan allows users to input more and bigger not only PDFS, but other types of files as well
 - Chatting with multiple PDFs at the same time
 
