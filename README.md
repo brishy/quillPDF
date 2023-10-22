@@ -11,6 +11,8 @@ quillPDF is a cutting-edge full-stack SaaS product, utilizing Next.js, Typescrip
 - ![AWS S3](https://img.shields.io/badge/AWS_S3-569A31?style=for-the-badge&logo=amazon-aws&logoColor=white)
 - ![Stripe](https://img.shields.io/badge/Stripe-008CDD?style=for-the-badge&logo=stripe&logoColor=white)
 - ![Pinecone DB](https://img.shields.io/badge/Pinecone_DB-4F0599?style=for-the-badge&logoColor=white)
+- ![Zod](https://img.shields.io/badge/Zod-FF6600?style=for-the-badge&logoColor=white)
+
 
   ## Features:
 - Interact with PDFs using OpenAI's API.
