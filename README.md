@@ -25,6 +25,11 @@ quillPDF is a cutting-edge full-stack SaaS product, utilizing Next.js, Typescrip
 - Pro plan allows users to input more and bigger not only PDFS, but other types of files as well
 - Chatting with multiple PDFs at the same time
 
+## Lessons Learned:
+- Handling large files and scaling file uploads with AWS S3 required optimization and understanding of AWS services to maintain performance.
+- Utilizing Prisma for database management provided a seamless and type-safe approach to handle database operations.
+- Building a cutting-edge product involved extensive debugging, especially when interacting with various technologies and APIs. 
+
 
 ## How to Run:
 1. Clone this repository
