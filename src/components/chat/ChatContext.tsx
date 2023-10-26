@@ -3,6 +3,7 @@ import { useToast } from "../ui/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { trpc } from "@/app/_trpc/client";
 import { INFINITE_QUERY_LIMIT } from "@/config/infinite-query";
+import { v4 as uuidv4 } from "uuid";
 
 type StreamResponse = {
   addMessage: () => void;
@@ -11,7 +12,6 @@ type StreamResponse = {
   isLoading: boolean;
 };
 
-// step 1
 export const ChatContext = createContext<StreamResponse>({
   addMessage: () => {},
   message: "",
@@ -23,7 +23,7 @@ interface Props {
   fileId: string;
   children: ReactNode;
 }
-// step 2
+
 export const ChatContextProvider = ({ fileId, children }: Props) => {
   const [message, setMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -34,7 +34,6 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
 
   const backupMessage = useRef("");
 
-  // route responsible to sending message
   const { mutate: sendMessage } = useMutation({
     mutationFn: async ({ message }: { message: string }) => {
       const response = await fetch("/api/message", {
@@ -55,7 +54,7 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
       backupMessage.current = message;
       setMessage("");
 
-      // step 1 for optimistic update
+      // step 1 for optimistic updates
       await utils.getFileMessages.cancel();
 
       // step 2
@@ -79,7 +78,7 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
           latestPage.messages = [
             {
               createdAt: new Date().toISOString(),
-              id: crypto.randomUUID(),
+              id: uuidv4(),
               text: message,
               isUserMessage: true,
             },
@@ -185,11 +184,11 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
         { messages: context?.previousMessages ?? [] }
       );
     },
-    // onSettled: async () => {
-    //   setIsLoading(false)
+    onSettled: async () => {
+      setIsLoading(false);
 
-    //   await utils.getFileMessages.invalidate({ fileId })
-    // },
+      await utils.getFileMessages.invalidate({ fileId });
+    },
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
